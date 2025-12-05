@@ -1,17 +1,16 @@
-// 1. Import tools
 const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cors = require('cors');
-// app
-const app = express();
-app.use(express.json()); 
-app.use(cors()); //apptoserver
+require('dotenv').config();
 
-// 3. Gupt API Key
-//  "process.env.GEMINI_API_KEY" to get the key.
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// 1. Setup Google AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// 4. "Niyara" System Instruction
+// 2. The Dynamic System Prompt (Niyara's Brain)
 const getSystemPrompt = (userName) => {
   return `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
@@ -76,39 +75,42 @@ B. **Premium Courses (Paid Section):**
 4.  **CRISVENTION:** If the user's message contains any language about suicide, self-harm, or being in immediate danger, you MUST STOP the normal conversation and respond ONLY with this:
     > "I hear that you are in a lot of pain, and I'm not equipped to help with this. Your life is important, and there are people who can help you right now. Please reach out to a crisis helpline. In India, you can contact Vandrevala Foundation at +91 9999 666 555."
 `;
+};
 
-// 5. This is the "Webhook" or "Endpoint"
-// URL to app will call. We will call it "/chat"
-// --- CHAT ROUTE ---
-// --- CHAT ROUTE ---
+// 3. The Root Route (To check if server is running)
+app.get('/', (req, res) => {
+    res.send('Niyara Server is Active!');
+});
+
+// 4. The Chat Route (FIXED)
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
         const userName = req.body.userName;
 
-        // 1. Initialize the Model
+        // Initialize Model
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash", //  this is 1.5-flash
+            model: "gemini-1.5-flash", 
             systemInstruction: getSystemPrompt(userName) 
         });
 
-        // 2. Start the Chat
+        // Chat
         const chat = model.startChat({ history: [] });
         const result = await chat.sendMessage(userMessage);
         const response = await result.response;
         const text = response.text();
 
-        // 3. Send the Reply back to Flutter
+        // Send Response
         res.json({ response: text });
 
     } catch (error) {
         console.error("Server Error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-}); // <--- THIS is where the function should actually close
+});
 
-// 6. Start the server
+// 5. Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
