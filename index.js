@@ -80,14 +80,15 @@ B. **Premium Courses (Paid Section):**
 // 5. This is the "Webhook" or "Endpoint"
 // URL to app will call. We will call it "/chat"
 // --- CHAT ROUTE ---
+// --- CHAT ROUTE ---
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
         const userName = req.body.userName;
 
-        // 1. Initialize the Model (with the user's name in the instructions)
+        // 1. Initialize the Model
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash", // Ensure this is 1.5-flash
+            model: "gemini-1.5-flash", //  this is 1.5-flash
             systemInstruction: getSystemPrompt(userName) 
         });
 
@@ -104,7 +105,7 @@ app.post('/chat', async (req, res) => {
         console.error("Server Error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-});
+}); // <--- THIS is where the function should actually close
 
 // 6. Start the server
 const PORT = process.env.PORT || 3000;
