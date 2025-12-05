@@ -79,41 +79,31 @@ B. **Premium Courses (Paid Section):**
 
 // 5. This is the "Webhook" or "Endpoint"
 // URL to app will call. We will call it "/chat"
+// --- CHAT ROUTE ---
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
-        const userName = req.body.userName; 
+        const userName = req.body.userName;
 
-        // Generate the Dynamic Prompt
+        // 1. Initialize the Model (with the user's name in the instructions)
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash", 
+            model: "gemini-1.5-flash", // Ensure this is 1.5-flash
             systemInstruction: getSystemPrompt(userName) 
         });
 
+        // 2. Start the Chat
         const chat = model.startChat({ history: [] });
         const result = await chat.sendMessage(userMessage);
         const response = await result.response;
         const text = response.text();
 
+        // 3. Send the Reply back to Flutter
         res.json({ response: text });
+
     } catch (error) {
-        console.error(error);
+        console.error("Server Error:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
-});
-    const chat = model.startChat();
-    const result = await chat.sendMessage(userMessage);
-    const response = await result.response;
-    const text = response.text();
-
-    //  Respond to Webhook
-    // Send the AI's text reply back to the Flutter app
-    res.json({ reply: text });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Something went wrong on the server' });
-  }
 });
 
 // 6. Start the server
