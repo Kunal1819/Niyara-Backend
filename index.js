@@ -82,14 +82,11 @@ B. **Premium Courses (Paid Section):**
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
-        
-        //  Name sent from Flutter
         const userName = req.body.userName; 
 
-        // 2. generate the Dynamic Prompt using the function 
+        // Generate the Dynamic Prompt
         const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            // Notice we call the function here!
+            model: "gemini-1.5-flash", 
             systemInstruction: getSystemPrompt(userName) 
         });
 
@@ -104,7 +101,6 @@ app.post('/chat', async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 });
-
     const chat = model.startChat();
     const result = await chat.sendMessage(userMessage);
     const response = await result.response;
