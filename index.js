@@ -12,7 +12,8 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI("AIzaSyC94U8FiUga4gQgH8A-Nm4QxMnGDFBV7ic");
 
 // Use the modern flash model
-const MODEL_NAME = "gemini-2.0-flash-lite";
+// This is the generic alias that works for all free accounts
+const MODEL_NAME = "gemini-flash-latest";
 
 const SYSTEM_INSTRUCTION = `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
