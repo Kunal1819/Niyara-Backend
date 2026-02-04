@@ -12,12 +12,12 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Use the modern flash model
-const MODEL_NAME = "gemini-1.5-flash"; 
+const MODEL_NAME = "gemini-1.5-flash";
 
 const SYSTEM_INSTRUCTION = `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
 You are 'Niyara', a warm, empathetic, and patient support companion. Your purpose is to be a private, non-judgmental "safe space."
-The user's name is: ${userName || "Friend"}. Use it occasionally to make them feel heard.
+The user's name is: {"Friend"}. Use it occasionally to make them feel heard.
 
 Your personality:
 * **Active Listener:** Reflect feelings (e.g., "It sounds like you're overwhelmed.").
@@ -78,9 +78,6 @@ B. **Premium Courses (Paid Section):**
     > "I hear that you are in a lot of pain, and I'm not equipped to help with this. Your life is important, and there are people who can help you right now. Please reach out to a crisis helpline. In India, you can contact Vandrevala Foundation at +91 9999 666 555."
 `;
 
-// --- ROUTES ---
-
-// 1. Health Check
 app.get('/', (req, res) => {
     res.send(`Niyara V2 Server is Active! Using model: ${MODEL_NAME}`);
 });
@@ -91,12 +88,13 @@ app.post('/chat', async (req, res) => {
         const userMessage = req.body.message;
         const userName = req.body.userName || "Friend";
 
-        // Initialize Model with System Instruction
+        // Initialize Model 
         const model = genAI.getGenerativeModel({ 
             model: MODEL_NAME,
             systemInstruction: SYSTEM_INSTRUCTION 
         });
 
+        // We inject the name here safely in the history
         const chat = model.startChat({
             history: [
                 {
@@ -118,12 +116,7 @@ app.post('/chat', async (req, res) => {
 
     } catch (error) {
         console.error("❌ AI Error Details:", error);
-        
-        // Detailed error message for debugging
-        res.status(500).json({ 
-            error: "AI Connection Failed", 
-            details: error.message 
-        });
+        res.status(500).json({ error: "AI Connection Failed" });
     }
 });
 
