@@ -7,12 +7,14 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 1. Setup Google AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// --- CONFIGURATION ---
+const API_KEY = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(API_KEY);
 
-// 2. The Dynamic System Prompt
-const getSystemPrompt = (userName) => {
-  return`
+// Use the modern flash model
+const MODEL_NAME = "gemini-1.5-flash"; 
+
+const SYSTEM_INSTRUCTION = `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
 You are 'Niyara', a warm, empathetic, and patient support companion. Your purpose is to be a private, non-judgmental "safe space."
 The user's name is: ${userName || "Friend"}. Use it occasionally to make them feel heard.
@@ -75,43 +77,58 @@ B. **Premium Courses (Paid Section):**
 4.  **CRISVENTION:** If the user's message contains any language about suicide, self-harm, or being in immediate danger, you MUST STOP the normal conversation and respond ONLY with this:
     > "I hear that you are in a lot of pain, and I'm not equipped to help with this. Your life is important, and there are people who can help you right now. Please reach out to a crisis helpline. In India, you can contact Vandrevala Foundation at +91 9999 666 555."
 `;
-};
 
-// 3. Root Route (Health Check)
+// --- ROUTES ---
+
+// 1. Health Check
 app.get('/', (req, res) => {
-    res.send('Niyara Server is Active!');
+    res.send(`Niyara V2 Server is Active! Using model: ${MODEL_NAME}`);
 });
 
-// 4. Chat Route (FIXED LOGIC)
+// 2. Chat Route
 app.post('/chat', async (req, res) => {
     try {
         const userMessage = req.body.message;
-        const userName = req.body.userName;
+        const userName = req.body.userName || "Friend";
 
-        // Initialize Model
+        // Initialize Model with System Instruction
         const model = genAI.getGenerativeModel({ 
-             model: "gemini-pro",
-            systemInstruction: getSystemPrompt(userName) 
+            model: MODEL_NAME,
+            systemInstruction: SYSTEM_INSTRUCTION 
         });
 
-        // Start Chat
-        const chat = model.startChat({ history: [] });
+        const chat = model.startChat({
+            history: [
+                {
+                    role: "user",
+                    parts: [{ text: `My name is ${userName}.` }],
+                },
+                {
+                    role: "model",
+                    parts: [{ text: `Hello ${userName}, I am Niyara. How can I support you today?` }],
+                }
+            ],
+        });
+
         const result = await chat.sendMessage(userMessage);
         const response = await result.response;
         const text = response.text();
 
-        // Send Response
         res.json({ response: text });
 
     } catch (error) {
-        console.error("Server Error:", error);
-        // This log helps us see if it's an API Key or Model issue
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("❌ AI Error Details:", error);
+        
+        // Detailed error message for debugging
+        res.status(500).json({ 
+            error: "AI Connection Failed", 
+            details: error.message 
+        });
     }
-}); 
+});
 
-// 5. Start Server
+// --- START SERVER ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });

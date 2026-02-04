@@ -1,7 +1,7 @@
 {
-  "name": "niyara-backend",
-  "version": "1.0.0",
-  "description": "Niyara Backend",
+  "name": "niyara-backend-v2",
+  "version": "2.0.0",
+  "description": "Rebuilt Niyara Backend",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
