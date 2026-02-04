@@ -1,5 +1,4 @@
 const express = require('express');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const cors = require('cors');
 require('dotenv').config();
 
@@ -7,13 +6,8 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- CONFIGURATION ---
+// IMPORTANT: This now reads the GROQ key you pasted in Render
 const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI("AIzaSyA_y3mVvRaWjB44gvb4n2oWAZL-gMnQEo8");
-
-// Use the modern flash model
-// This is the generic alias that works for all free accounts
-const MODEL_NAME = "gemini-exp-1206";
 
 const SYSTEM_INSTRUCTION = `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
@@ -79,8 +73,9 @@ B. **Premium Courses (Paid Section):**
     > "I hear that you are in a lot of pain, and I'm not equipped to help with this. Your life is important, and there are people who can help you right now. Please reach out to a crisis helpline. In India, you can contact Vandrevala Foundation at +91 9999 666 555."
 `;
 
+// 1. Health Check Route
 app.get('/', (req, res) => {
-    res.send(`Niyara V2 Server is Active! Using model: ${MODEL_NAME}`);
+    res.send("Niyara Backend is Active (Running on Groq)!");
 });
 
 // 2. Chat Route
@@ -89,39 +84,49 @@ app.post('/chat', async (req, res) => {
         const userMessage = req.body.message;
         const userName = req.body.userName || "Friend";
 
-        // Initialize Model 
-        const model = genAI.getGenerativeModel({ 
-            model: MODEL_NAME,
-            systemInstruction: SYSTEM_INSTRUCTION 
+        console.log("📨 Received message. Sending to Groq...");
+
+        // We use standard 'fetch' to call Groq. No extra libraries needed.
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${API_KEY}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "llama-3.3-70b-versatile", // This model is FREE and FAST
+                messages: [
+                    { role: "system", content: SYSTEM_INSTRUCTION },
+                    { role: "user", content: `My name is ${userName}. ${userMessage}` }
+                ],
+                temperature: 0.7
+            })
         });
 
-        // We inject the name here safely in the history
-        const chat = model.startChat({
-            history: [
-                {
-                    role: "user",
-                    parts: [{ text: `My name is ${userName}.` }],
-                },
-                {
-                    role: "model",
-                    parts: [{ text: `Hello ${userName}, I am Niyara. How can I support you today?` }],
-                }
-            ],
-        });
+        const data = await response.json();
 
-        const result = await chat.sendMessage(userMessage);
-        const response = await result.response;
-        const text = response.text();
+        // Check if Groq gave an error
+        if (data.error) {
+            console.error("❌ Groq Error:", data.error);
+            throw new Error(data.error.message || "Groq API Error");
+        }
 
-        res.json({ response: text });
+        // Extract the reply
+        const botReply = data.choices[0].message.content;
+        
+        console.log("✅ Reply received!");
+        res.json({ response: botReply });
 
     } catch (error) {
-        console.error("❌ AI Error Details:", error);
-        res.status(500).json({ error: "AI Connection Failed" });
+        console.error("❌ Server Error:", error.message);
+        res.status(500).json({ 
+            error: "Server Error", 
+            details: error.message 
+        });
     }
 });
 
-// --- START SERVER ---
+// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
