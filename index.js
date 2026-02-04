@@ -13,7 +13,7 @@ const genAI = new GoogleGenerativeAI("AIzaSyA_y3mVvRaWjB44gvb4n2oWAZL-gMnQEo8");
 
 // Use the modern flash model
 // This is the generic alias that works for all free accounts
-const MODEL_NAME = "gemini-flash-latest";
+const MODEL_NAME = "gemini-pro-latest";
 
 const SYSTEM_INSTRUCTION = `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
