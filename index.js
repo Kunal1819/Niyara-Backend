@@ -115,7 +115,14 @@ app.post('/chat', async (req, res) => {
         const botReply = data.choices[0].message.content;
         
         console.log("✅ Reply received!");
-        res.json({ response: botReply });
+       // The "Universal" Fix: Send answer in all formats
+        res.json({ 
+            response: botReply, 
+            text: botReply,      
+            message: botReply,   
+            reply: botReply,     
+            answer: botReply     
+        });
 
     } catch (error) {
         console.error("❌ Server Error:", error.message);
