@@ -9,7 +9,7 @@ app.use(cors());
 
 // --- CONFIGURATION ---
 const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI("AIzaSyC94U8FiUga4gQgH8A-Nm4QxMnGDFBV7ic");
+const genAI = new GoogleGenerativeAI("AIzaSyA_y3mVvRaWjB44gvb4n2oWAZL-gMnQEo8");
 
 // Use the modern flash model
 // This is the generic alias that works for all free accounts
