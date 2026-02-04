@@ -9,7 +9,7 @@ app.use(cors());
 
 // --- CONFIGURATION ---
 const API_KEY = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(AIzaSyC94U8FiUga4gQgH8A-Nm4QxMnGDFBV7ic);
+const genAI = new GoogleGenerativeAI("AIzaSyC94U8FiUga4gQgH8A-Nm4QxMnGDFBV7ic");
 
 // Use the modern flash model
 const MODEL_NAME = "gemini-2.0-flash";
