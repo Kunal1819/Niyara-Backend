@@ -12,7 +12,7 @@ const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 // Use the modern flash model
-const MODEL_NAME = "gemini-1.5-flash";
+const MODEL_NAME = "gemini-pro";
 
 const SYSTEM_INSTRUCTION = `
 ### 1. YOUR CORE PERSONALITY (THE "VIBE")
