@@ -6,7 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// GROQ API KEY (Loaded from Render Environment)
+
 const API_KEY = process.env.GEMINI_API_KEY; 
 
 const SYSTEM_INSTRUCTION = `
@@ -72,7 +72,7 @@ app.post('/chat', async (req, res) => {
         const userMessage = req.body.message;
         const userName = req.body.userName || "Friend";
 
-        console.log(`📨 Message from ${userName}: ${userMessage}`);
+        console.log(` Message from ${userName}: ${userMessage}`);
 
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
@@ -84,7 +84,7 @@ app.post('/chat', async (req, res) => {
                 model: "llama-3.3-70b-versatile",
                 messages: [
                     { role: "system", content: SYSTEM_INSTRUCTION },
-                    // We explicitly tell the AI the user's name here so it follows Rule 1
+                   
                     { role: "user", content: `(My name is ${userName}) ${userMessage}` }
                 ],
                 temperature: 0.7
@@ -94,14 +94,14 @@ app.post('/chat', async (req, res) => {
         const data = await response.json();
 
         if (data.error) {
-            console.error("❌ Groq API Error:", data.error);
+            console.error(" Groq API Error:", data.error);
             throw new Error(data.error.message);
         }
 
         const botReply = data.choices[0].message.content;
-        console.log("✅ Reply sent to app!");
+        console.log(" Reply sent to app!");
 
-        // THE UNIVERSAL FIX: Sending the answer in every format so the app finds it.
+       
         res.json({ 
             response: botReply, 
             text: botReply,      
@@ -110,7 +110,7 @@ app.post('/chat', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Server Error:", error.message);
+        console.error(" Server Error:", error.message);
         res.status(500).json({ error: "Server Error", details: error.message });
     }
 });
